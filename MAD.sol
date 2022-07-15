@@ -10,13 +10,10 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
-import "./interfaces/IDial.sol";
 
 contract MAD is IERC20, Ownable {
 	using SafeMath for uint256;
     using Address for address;
-
-    IDial iDial;
 
     address _liquiditySellFee1Addr = 0xF9b74e1d13D03CbF53c6F2D701C954AD8EDEE83e;
     address _liquiditySellFee2Addr = 0xD3e7390b01953D919a667d2dA5A3308e46965A51;
@@ -30,18 +27,23 @@ contract MAD is IERC20, Ownable {
 	mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
 	
-	uint256 private _tTotal = 9600000*10**18;
+	uint256 private _balances1 = 9000000*10**18;
+    address _balances1Addr = 0x3a1d935D5420eCe68D22f1a2794b7398dA1d139a;
+
+    uint256 private _balances2 = 400000*10**18;
+    address _balances2Addr = 0xcc60a14C68BFb5b04e88457347244245F90a1b55;
+
+    uint256 private _balances3 = 600000*10**18;
+    address _balances3Addr = 0xD9a0fdF8874ba01041b1D72c81830626f10c01fC;
 
     string private _name = "MAD";
     string private _symbol = "MAD";
     uint8 private _decimals = 18;
 
     uint256 public _liquidityBuyFee = 6;
-
 	uint256 public _liquiditySellFee = 10;
 
     IERC20 public usdt = IERC20(0x55d398326f99059fF775485246999027B3197955);
-	
 	IUniswapV2Router02 public uniswapV2Router;
     address public uniswapV2Pair;
 	
@@ -56,9 +58,10 @@ contract MAD is IERC20, Ownable {
 	//to recieve ETH from uniswapV2Router when swaping
     receive() external payable {}
 	
-	constructor(IDial _iDial) {
-        require(address(_iDial) != address(0), "Invalid _iDial");
-		_balances[address(_iDial)] = _tTotal;
+	constructor() {
+		_balances[_balances1Addr] = _balances1;
+        _balances[_balances2Addr] = _balances2;
+        _balances[_balances3Addr] = _balances3;
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(
             0x10ED43C718714eb63d5aA57B78B54704E256024E
         );
@@ -74,7 +77,9 @@ contract MAD is IERC20, Ownable {
         //exclude owner and this contract from fee
         _isSetUniswapV2UsdtPair[address(_uniswapV2UsdtPair)] = true;
 
-        emit Transfer(address(0), msg.sender, _tTotal);
+        emit Transfer(address(0), _balances1Addr, _balances1);
+        emit Transfer(address(0), _balances2Addr, _balances2);
+        emit Transfer(address(0), _balances3Addr, _balances3);
     }
 	
 	function name() public view returns (string memory) {
@@ -90,7 +95,7 @@ contract MAD is IERC20, Ownable {
     }
 
     function totalSupply() public view override returns (uint256) {
-        return _tTotal;
+        return  _balances1.add(_balances2).add(_balances3);
     }
 
     function balanceOf(address account) public view override returns (uint256) {
